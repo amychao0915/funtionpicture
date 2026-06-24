@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數學函數與圖形對對碰</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@500;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 8px;
+            font-size: 28px;
+            text-shadow: 2px 2px 0px #ffffff;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+
+        .scoreboard {
+            background-color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.04);
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #334155;
+            border: 3px solid #bfdbfe;
+            font-weight: bold;
+        }
+
+        .scoreboard span {
+            color: #ff6b6b;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 120px);
+            grid-template-rows: repeat(4, 120px);
+            gap: 18px;
+            perspective: 1000px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 20px;
+            border-radius: 24px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .card {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card:hover { transform: scale(1.04); }
+        .card.flipped { transform: rotateY(180deg); }
+        .card.matched { transform: rotateY(180deg) scale(1); animation: matchScale 0.5s ease-in-out; }
+
+        .card.matched .card-front {
+            border-color: #4ade80; 
+        }
+
+        @keyframes matchScale {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.12); }
+            100% { transform: rotateY(180deg) scale(1); }
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 18px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            transition: opacity 0.2s ease;
+        }
+
+        .card-back {
+            background-color: #fffbeb; 
+            border: 4px solid #ffffff;
+            overflow: hidden;
+            display: block;
+        }
+
+        .card-back-pattern {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            right: 6px;
+            bottom: 6px;
+            border: 2px dashed rgba(251, 191, 36, 0.4);
+            border-radius: 12px;
+            background-image: 
+                url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NCIgaGVpZ2h0PSI0NCIgdmlld0JveD0iMCAwIDQ0IDQ0Ij4KICA8cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iMTIiIGhlaWdodD0iMTYiIHJ4PSIyIiBmaWxsPSJub25lIiBzdHJva2U9IiM3ZGRmZjkiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPHJlY3QgeD0iNyIgeT0iNyIgd2lkdGg9IjgiIGhlaWdodD0iNCIgZmlsbD0iIzdkZGZmOSIgb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iOCIgY3k9IjEzIiByPSIxIiBmaWxsPSIjN2RkZmY5Ii8+CiAgPGNpcmNsZSBjeD0iMTQiIGN5PSIxMyIgcj0iMSIgZmlsbD0iIzdkZGZmOSIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzAsMTAgMzYsMTggMjQsMTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdkZGZmOSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPC9zdmc+'),
+                url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDUwIDUwIj4KICA8dGV4dCB4PSIxMCIgeT0iMzAiIGZpbGw9IiNmNDNmNWUiIGZvbnQtZmFtaWx5PSInRnJlZG9rYScsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtd2VpZ2h0PSJib2xkIj5hPC90ZXh0PgogIDx0ZXh0IHg9IjE3IiB5PSIyNCIgZmlsbD0iI2Y0M2Y1ZSIgZm9udC1mYW1pbHk9IidGcmVkb2thJywgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI4IiBmb250LXdlaWdodD0iYm9sZCI+MjwvdGV4dD4KICA8dGV4dCB4PSIzNCIgeT0iNDUiIGZpbGw9IiNmNDNmNWUiIGZvbnQtZmFtaWx5PSInRnJlZG9rYScsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtd2VpZ2h0PSJib2xkIj5iPC90ZXh0PgogIDx0ZXh0IHg9IjQxIiB5PSIzOSIgZmlsbD0iI2Y0M2Y1ZSIgZm9udC1mYW1pbHk9IidGcmVkb2thJywgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI4IiBmb250LXdlaWdodD0iYm9sZCI+MzwvdGV4dD4KPC9zdmc+'),
+                url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNCIgaGVpZ2h0PSIzNCIgdmlld0JveD0iMCAwIDM0IDM0Ij4KICA8Y2lyY2xlIGN4PSIyNSIgY3k9IjEwIiByPSIzIiBmaWxsPSJub25lIiBzdHJva2U9IiMxMGI5ODEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPHBhdGggZD0iTSA4IDI2IEwgMTQgMzIgTSAxNCAyNiBMIDggMzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y5NzMxNCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4=');
+            background-repeat: repeat;
+            background-size: 44px 44px, 50px 50px, 34px 34px;
+        }
+
+        .card.flipped .card-back,
+        .card.matched .card-back {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .card-front {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            border: 4px solid #93c5fd;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .func-text {
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Fredoka', "Times New Roman", serif;
+            font-style: italic;
+            color: #1e3a8a;
+            background: #eff6ff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .func-graph {
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn {
+            margin-top: 35px;
+            padding: 14px 36px;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(180deg, #ff7675 0%, #d63031 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0px #b2bec3;
+            transition: all 0.1s ease;
+        }
+
+        .btn:hover { transform: translateY(2px); box-shadow: 0 4px 0px #b2bec3; }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0px 0px #b2bec3; }
+    </style>
+</head>
+<body>
+
+    <h1>📐 數學函數圖形對對碰 📊</h1>
+    <div class="subtitle">動動腦時間！將正確的「數學函數式」與其對應的「幾何圖形」連起來吧！</div>
+    
+    <div class="scoreboard">
+        翻牌次數：<span id="clicks">0</span> 次 &nbsp;|&nbsp; 已成功配對：<span id="matches">0</span> / 8 組
+    </div>
+
+    <div class="grid" id="gameGrid"></div>
+
+    <button class="btn" onclick="resetGame()">重新洗牌開始</button>
+
+    <script>
+        const createSVG = (pathData) => `
+            <svg class="func-graph" viewBox="-50 -50 100 100">
+                <line x1="-50" y1="-25" x2="50" y2="-25" stroke="#f1f5f9" stroke-width="1.5"/>
+                <line x1="-50" y1="25" x2="50" y2="25" stroke="#f1f5f9" stroke-width="1.5"/>
+                <line x1="-25" y1="-50" x2="-25" y2="50" stroke="#f1f5f9" stroke-width="1.5"/>
+                <line x1="25" y1="-50" x2="25" y2="50" stroke="#f1f5f9" stroke-width="1.5"/>
+                <line x1="-50" y1="0" x2="50" y2="0" stroke="#94a3b8" stroke-width="2"/>
+                <line x1="0" y1="-50" x2="0" y2="50" stroke="#94a3b8" stroke-width="2"/>
+                <path d="${pathData}" fill="none" stroke="#ff4757" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+
+        function generatePath(fn, scaleX = 15, scaleY = 15) {
+            let d = [];
+            let isFirst = true;
+            for (let px = -45; px <= 45; px++) {
+                let mathX = px / scaleX;
+                let mathY = fn(mathX);
+                if (mathY === null || isNaN(mathY) || !isFinite(mathY)) continue;
+                
+                let py = -(mathY * scaleY);
+                if (py >= -45 && py <= 45) {
+                    if (isFirst) {
+                        d.push(`M ${px} ${py}`);
+                        isFirst = false;
+                    } else {
+                        d.push(`L ${px} ${py}`);
+                    }
+                }
+            }
+            return d.join(" ");
+        }
+
+        function generateTanPath() {
+            let d = [];
+            let isFirstInSegment = true;
+            let lastPy = null;
+            const scaleX = 12;
+            const scaleY = 12;
+
+            for (let px = -45; px <= 45; px++) {
+                let mathX = px / scaleX;
+                let mathY = Math.tan(mathX);
+                let py = -(mathY * scaleY);
+
+                if (py < -45 || py > 45) {
+                    isFirstInSegment = true;
+                    lastPy = null;
+                    continue;
+                }
+
+                if (lastPy !== null && Math.abs(py - lastPy) > 50) {
+                    isFirstInSegment = true;
+                }
+
+                if (isFirstInSegment) {
+                    d.push(`M ${px} ${py.toFixed(1)}`);
+                    isFirstInSegment = false;
+                } else {
+                    d.push(`L ${px} ${py.toFixed(1)}`);
+                }
+                lastPy = py;
+            }
+            return d.join(" ");
+        }
+
+        const cardsData = [
+            { id: 1, content: '<span class="func-text">y = sin x</span>' },
+            { id: 1, content: createSVG(generatePath(Math.sin, 15, 18)) },
+            { id: 2, content: '<span class="func-text">y = cos x</span>' },
+            { id: 2, content: createSVG(generatePath(Math.cos, 15, 18)) },
+            { id: 3, content: '<span class="func-text">y = tan x</span>' },
+            { id: 3, content: createSVG(generateTanPath()) },
+            { id: 4, content: '<span class="func-text">y = 10<sup>x</sup></span>' },
+            { id: 4, content: createSVG(generatePath(x => Math.pow(2.5, x), 15, 15)) },
+            { id: 5, content: '<span class="func-text">y = log x</span>' },
+            { id: 5, content: createSVG(generatePath(x => x > 0 ? Math.log(x) / Math.log(2.5) : null, 15, 15)) },
+            { id: 6, content: '<span class="func-text">y = x</span>' },
+            { id: 6, content: createSVG(generatePath(x => x, 15, 15)) },
+            { id: 7, content: '<span class="func-text">y = x<sup>2</sup></span>' },
+            { id: 7, content: createSVG(generatePath(x => 0.4 * x * x, 15, 15)) },
+            { id: 8, content: '<span class="func-text">y = x<sup>3</sup></span>' },
+            { id: 8, content: createSVG(generatePath(x => 0.15 * x * x * x, 15, 15)) }
+        ];
+
+        let flippedCards = [];
+        let clickCount = 0;
+        let matchCount = 0;
+        let isProcessing = false;
+
+        const grid = document.getElementById('gameGrid');
+        const clicksDisplay = document.getElementById('clicks');
+        const matchesDisplay = document.getElementById('matches');
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            grid.innerHTML = '';
+            flippedCards = [];
+            clickCount = 0;
+            matchCount = 0;
+            isProcessing = false;
+            clicksDisplay.textContent = clickCount;
+            matchesDisplay.textContent = matchCount;
+
+            const shuffled = shuffle(JSON.parse(JSON.stringify(cardsData)));
+
+            shuffled.forEach(data => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.id = data.id;
+                card.innerHTML = `
+                    <div class="card-face card-back">
+                        <div class="card-back-pattern"></div>
+                    </div>
+                    <div class="card-face card-front">${data.content}</div>
+                `;
+                card.addEventListener('click', () => flipCard(card));
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (isProcessing || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                clickCount++;
+                clicksDisplay.textContent = clickCount;
+                isProcessing = true;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+
+            if (card1.dataset.id === card2.dataset.id) {
+                setTimeout(() => {
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchCount++;
+                    matchesDisplay.textContent = matchCount;
+                    flippedCards = [];
+                    isProcessing = false;
+
+                    if (matchCount === 8) {
+                        setTimeout(() => {
+                            alert(`🎉 哇！太厲害了！你總共花了 ${clickCount} 次就成功破關囉！✨`);
+                        }, 500);
+                    }
+                }, 400);
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    isProcessing = false;
+                }, 1000);
+            }
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
